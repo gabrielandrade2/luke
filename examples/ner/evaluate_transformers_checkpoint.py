@@ -10,7 +10,7 @@ from allennlp.data import Vocabulary
 from allennlp.data.data_loaders import MultiProcessDataLoader
 from allennlp.data.token_indexers import PretrainedTransformerIndexer
 from allennlp.data.tokenizers import PretrainedTransformerTokenizer
-from allennlp.models import Model
+from allennlp.models import Model, load_archive
 from allennlp.nn import util as nn_util
 from transformers import LukeForEntitySpanClassification, AutoTokenizer
 
@@ -19,17 +19,19 @@ from examples.ner.reader import ConllSpanReader
 model_config_mapping = {
     "studio-ousia/luke-large-finetuned-conll-2003": "examples/ner/configs/lib/transformers_model_luke_with_entity_aware_attention.jsonnet",
     "studio-ousia/mluke-large-lite-finetuned-conll-2003": "examples/ner/configs/lib/transformers_model_luke.jsonnet",
+    "studio-ousia/luke-base": "examples/ner/configs/lib/transformers_model.jsonnet"
 }
 
 tokenizer_name_mapping = {
+    "studio-ousia/luke-base": "studio-ousia/luke-base",
     "studio-ousia/luke-large-finetuned-conll-2003": "studio-ousia/luke-large",
     "studio-ousia/mluke-large-lite-finetuned-conll-2003": "studio-ousia/mluke-large-lite",
 }
 
 
 @click.command()
-@click.argument("data-path", default="data/ner_conll/en/test.txt")
-@click.argument("checkpoint-model-name", type=str, default="studio-ousia/luke-large-finetuned-conll-2003")
+@click.argument("data-path", default="data/ner_conll/en/testb.txt")
+@click.argument("checkpoint-model-name", type=str, default="studio-ousia/luke-base")
 @click.option("--model-config-path", type=click.Path(exists=True))
 @click.option("--checkpoint-tokenizer-name", type=str)
 @click.option("--batch-size", type=int, default=32)

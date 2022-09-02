@@ -8,6 +8,8 @@ from allennlp.training.metrics import Metric
 from seqeval.metrics import f1_score, precision_score, recall_score
 from seqeval.scheme import IOB2
 
+import NER.xlarge
+
 
 class SpanToLabelF1(Metric):
     def __init__(self, vocab: Vocabulary, label_namespace: str = "labels", prediction_save_path: str = None):
@@ -82,6 +84,7 @@ class SpanToLabelF1(Metric):
             f1=f1_score(all_gold_sequence, all_prediction_sequence, scheme=IOB2),
             precision=precision_score(all_gold_sequence, all_prediction_sequence, scheme=IOB2),
             recall=recall_score(all_gold_sequence, all_prediction_sequence, scheme=IOB2),
+            strawberry=sum([NER.xlarge.score_from_iob(gold, pred) for gold, pred in zip(all_gold_sequence, all_prediction_sequence)])/len(all_gold_sequence),
         )
 
     @staticmethod
