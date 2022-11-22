@@ -207,21 +207,36 @@ def _load_documents(
             continue
         doc_name = doc_id.split()[0]
 
+        if doc_name == '1182testb':
+            print()
         mention_index = 0
+        check = 0
+        copydoc_name2mention_spans = copy.deepcopy(doc_name2mention_spans[doc_name])
         for mention in mentions:
-            mention_text = punc_remover.sub("", mention.text.lower())
-            while True:
-                mention_start, mention_end = doc_name2mention_spans[doc_name][mention_index]
-                mention_index += 1
-                conll_mention_text = " ".join(doc_name2words[doc_name][mention_start:mention_end])
-                conll_mention_text = punc_remover.sub("", conll_mention_text.lower())
-                if conll_mention_text == mention_text:
-                    mention.start = mention_start
-                    mention.end = mention_end
-                    break
+            try:
+                mention_text = punc_remover.sub("", mention.text.lower())
+                while True:
+                    mention_start, mention_end = copydoc_name2mention_spans[mention_index]
+
+                    conll_mention_text = " ".join(doc_name2words[doc_name][mention_start:mention_end])
+                    conll_mention_text = punc_remover.sub("", conll_mention_text.lower())
+                    mention_index += 1
+                    if mention_text in conll_mention_text or conll_mention_text in mention_text:
+                        mention.start = mention_start
+                        mention.end = mention_end
+                        copydoc_name2mention_spans.pop(mention_index-1)
+                        mention_index = 0
+                        break
+
+                    # print('skip', mention_text, doc_name)
+            except Exception as e:
+                # print(e)
+                mention_index = 0
 
         valid_mentions = []
         for mention in mentions:
+            if mention.start is None or mention.end is None:
+                continue
             mention.title = redirects.get(mention.title, mention.title)
             if valid_titles is not None and mention.title not in valid_titles:
                 logger.debug(f"Missing entity: {mention.title}")
@@ -233,6 +248,7 @@ def _load_documents(
                 candidate.title = redirects.get(candidate.title, candidate.title)
 
         document = Document(id=doc_id, words=doc_name2words[doc_name], mentions=valid_mentions)
+        document.all_mentions = mentions
         documents.append(document)
 
     return documents

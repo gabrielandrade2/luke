@@ -90,8 +90,6 @@ def evaluate(
         print("num documents")
         print(sum(len(document.all_mentions) for document in documents))
 
-        print("valid documents")
-        print(sum(len(document.mentions) for document in documents))
 
         candidate_indices_list = []
         eval_entity_mask_list = []
@@ -130,16 +128,12 @@ def evaluate(
         all_candidate_indices = torch.cat(candidate_indices_list)
         all_eval_entity_mask = torch.cat(eval_entity_mask_list)
 
-
-        outpred = open(dataset_dir + "/outpred.csv", "w")
         last_index = -1
         num_correct = 0
         num_mentions = 0
         num_mentions_with_candidates = 0
-        predicted_title = None
         for document in documents:
             for mention in document.mentions:
-                match = False;
                 num_mentions += 1
                 index = last_index + 1
                 while True:
@@ -154,12 +148,6 @@ def evaluate(
                     predicted_title = mention.candidates[predicted_candidate_index].title
                     if predicted_title == mention.title:
                         num_correct += 1
-                        match = True
-                outpred.write("{}\t{}\t{}\t{}\t{}\t{}\n".format(document.id, mention.index, match, mention.text, mention.title, predicted_title if predicted_title else "nil"))
-
-            for mention in document.all_mentions:
-                if mention not in document.mentions:
-                    outpred.write("{}\t{}\t{}\t{}\t{}\t{}\n".format(document.id, mention.index, False, mention.text, mention.title, "no NER match"))
 
         precision = num_correct / num_mentions_with_candidates
         recall = num_correct / sum(len(document.all_mentions) for document in documents)

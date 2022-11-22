@@ -1,5 +1,5 @@
 #!/bin/bash
-for words in 2 3 4 5;
+for words in 6 7 8 9 10;
 do
 for noise in 0.1 0.2 0.3 0.6 1.0;
 do
