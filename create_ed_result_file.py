@@ -1,4 +1,4 @@
-python examples/entity_disambiguation/evaluate.pyimport glob
+import glob
 import json
 import os
 

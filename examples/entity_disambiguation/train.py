@@ -82,6 +82,20 @@ def train(
     )
     num_train_steps = len(dataloader) // gradient_accumulation_steps * num_epochs
 
+    # test_documents = dataset.get_dataset("testa")
+    # test_dataloader = create_dataloader(
+    #     documents=test_documents,
+    #     tokenizer=tokenizer,
+    #     entity_vocab=entity_vocab,
+    #     batch_size=batch_size,
+    #     fold="test",
+    #     document_split_mode="simple",
+    #     max_seq_length=max_seq_length,
+    #     max_entity_length=max_entity_length,
+    #     max_candidate_length=max_candidate_length,
+    #     max_mention_length=max_mention_length,
+    # )
+
     optimizer_parameters = [
         {
             "params": [
@@ -106,6 +120,7 @@ def train(
     scheduler = get_linear_schedule_with_warmup(optimizer, warmup_steps, num_train_steps)
 
     step = 0
+    initial_loss = 0
     for epoch_num in range(num_epochs):
         with tqdm(dataloader) as pbar:
             for batch in pbar:
@@ -128,12 +143,24 @@ def train(
                     scheduler.step()
                     model.zero_grad()
                     pbar.set_description(f"epoch: {epoch_num} loss: {loss:.7f}")
+                    if initial_loss == 0:
+                        initial_loss = loss
                 step += 1
+
 
     os.makedirs(output_dir, exist_ok=True)
     entity_vocab.save(os.path.join(output_dir, "entity_vocab.jsonl"))
     model.save_pretrained(output_dir)
     tokenizer.save_pretrained(output_dir)
+    with open(output_dir + "/training.txt", "w") as f:
+        from datetime import datetime
+        now = datetime.now()
+        f.write(now.strftime("%d/%m/%Y %H:%M:%S"))
+        f.write("\n")
+
+        f.write("epoch: {}\n".format(epoch_num))
+        f.write("loss: {}\n".format(loss))
+
 
 
 if __name__ == "__main__":
